@@ -1,0 +1,67 @@
+name: universal
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'universal/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-matrix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - name: debian
+            tag: debian_universal
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check if Dockerfile exists
+        run: |
+          if [ ! -f "universal/${{ matrix.image.name }}/Dockerfile" ]; then
+            echo "Dockerfile not found: universal/${{ matrix.image.name }}/Dockerfile"
+            exit 1
+          fi
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./universal/${{ matrix.image.name }}/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/siputzx/panel:${{ matrix.image.tag }}
+          cache-from: type=gha,scope=universal${{ matrix.image.tag }}
+          cache-to: type=gha,mode=max,scope=universal${{ matrix.image.tag }}
+          provenance: false
+          sbom: false
