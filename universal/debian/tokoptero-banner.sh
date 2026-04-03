@@ -8,6 +8,10 @@ ips="$(hostname -I 2>/dev/null | xargs || true)"
 ips="${ips:-127.0.0.1}"
 panel_ip="${SERVER_IP:-${INTERNAL_IP:-${ips%% *}}}"
 panel_port="${SERVER_PORT:-}"
+
+if [ -z "${panel_ip}" ] || [ "${panel_ip}" = "0.0.0.0" ]; then
+    panel_ip="${INTERNAL_IP:-${ips%% *}}"
+fi
 uptime_short="$(uptime -p 2>/dev/null | sed 's/^up //; s/, / /g' || echo unknown)"
 mem_line="$(free -h | awk '/Mem:/ {print $3" of "$2}')"
 disk_line="$(df -h /home/container | awk 'NR==2 {print $5" of "$2}')"
@@ -56,11 +60,11 @@ cpu_usage() {
 load_now="$(cpu_usage)"
 last_login_ip="${INTERNAL_IP:-127.0.0.1}"
 
-cyan='\033[1;36m'
-green='\033[1;32m'
-mag='\033[1;35m'
-white='\033[1;37m'
-reset='\033[0m'
+cyan=$'\e[1;36m'
+green=$'\e[1;32m'
+mag=$'\e[1;35m'
+white=$'\e[1;37m'
+reset=$'\e[0m'
 
 print_logo() {
     local term_cols="${COLUMNS:-80}"
@@ -74,13 +78,15 @@ print_logo() {
     fi
 
     if command -v figlet >/dev/null 2>&1; then
-        figlet -f small -w "$term_cols" "TOKOPTERO" | sed "s/^/${mag}/; s/$/${reset}/"
+        while IFS= read -r line; do
+            printf "%b%s%b\n" "$mag" "$line" "$reset"
+        done < <(figlet -f small -w "$term_cols" "TOKOPTERO")
     else
-        printf "${mag}TOKOPTERO${reset}\n"
+        printf "%bTOKOPTERO%b\n" "$mag" "$reset"
     fi
 }
 
-printf "\033c"
+printf "\e[H\e[2J"
 print_logo
 printf "\n"
 printf "${cyan}%s${reset} for ${green}%s${reset} running ${cyan}Debian Linux %s${reset}\n" "Universal Environment" "$host_name" "$kernel"
