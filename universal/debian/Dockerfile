@@ -120,6 +120,17 @@ RUN curl -fsSL https://bun.sh/install | env BUN_INSTALL=/opt/bun bash \
     && ln -sf /opt/bun/bin/bun /usr/local/bin/bun \
     && ln -sf /opt/bun/bin/bunx /usr/local/bin/bunx
 
+RUN ARCH="$(dpkg --print-architecture)" \
+    && case "$ARCH" in \
+        amd64) DENO_TARGET='x86_64-unknown-linux-gnu' ;; \
+        arm64) DENO_TARGET='aarch64-unknown-linux-gnu' ;; \
+        *) echo "Unsupported architecture: $ARCH"; exit 1 ;; \
+    esac \
+    && curl -fsSL "https://github.com/denoland/deno/releases/latest/download/deno-${DENO_TARGET}.zip" -o /tmp/deno.zip \
+    && unzip -o /tmp/deno.zip -d /usr/local/bin \
+    && chmod +x /usr/local/bin/deno \
+    && rm -f /tmp/deno.zip
+
 RUN curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | sh -s -- -y --profile default --no-modify-path \
     && mv /root/.cargo /opt/cargo \
     && mv /root/.rustup /opt/rustup \
@@ -127,7 +138,7 @@ RUN curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | sh -s -- -y --p
     && ln -sf /opt/cargo/bin/rustc /usr/local/bin/rustc \
     && ln -sf /opt/cargo/bin/rustup /usr/local/bin/rustup
 
-RUN python3 -m pip install --no-cache-dir --break-system-packages -U pip setuptools wheel yt-dlp speedtest-cli
+RUN python3 -m pip install --no-cache-dir --break-system-packages -U pip setuptools wheel speedtest-cli
 
 RUN ARCH="$(dpkg --print-architecture)" \
     && case "$ARCH" in \
@@ -149,7 +160,7 @@ RUN ARCH="$(dpkg --print-architecture)" \
 RUN useradd -m -d /home/container container
 STOPSIGNAL SIGINT
 
-ENV PATH="/opt/uv:/opt/bun/bin:/opt/cargo/bin:/usr/local/go/bin:${PATH}" \
+ENV PATH="/home/container/.local/bin:/opt/uv:/opt/bun/bin:/opt/cargo/bin:/usr/local/go/bin:${PATH}" \
     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
