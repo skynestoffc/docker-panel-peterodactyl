@@ -16,12 +16,14 @@ RUN apt-get update \
         curl \
         dnsutils \
         ffmpeg \
+        fd-find \
         figlet \
         fonts-liberation \
         g++ \
         gcc \
         git \
         gnupg \
+        htop \
         imagemagick \
         iproute2 \
         iputils-ping \
@@ -43,18 +45,32 @@ RUN apt-get update \
         libxshmfence1 \
         libssl-dev \
         lsb-release \
+        lsof \
         make \
+        mtr-tiny \
+        nano \
+        neofetch \
+        net-tools \
+        nmap \
         procps \
         python3 \
         python3-dev \
         python3-pip \
         python3-venv \
+        rsync \
+        screen \
         sqlite3 \
         tar \
+        tcpdump \
         tini \
+        tmux \
+        traceroute \
+        tree \
         tzdata \
         unzip \
+        vim \
         webp \
+        whois \
         wget \
         xz-utils \
         zip \
@@ -115,7 +131,24 @@ RUN curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | sh -s -- -y --p
     && ln -sf /opt/cargo/bin/rustc /usr/local/bin/rustc \
     && ln -sf /opt/cargo/bin/rustup /usr/local/bin/rustup
 
-RUN python3 -m pip install --no-cache-dir --break-system-packages -U pip setuptools wheel yt-dlp
+RUN python3 -m pip install --no-cache-dir --break-system-packages -U pip setuptools wheel yt-dlp speedtest-cli
+
+RUN ARCH="$(dpkg --print-architecture)" \
+    && case "$ARCH" in \
+        amd64) FF_ARCH='linux-amd64' ;; \
+        arm64) FF_ARCH='linux-aarch64' ;; \
+        *) FF_ARCH='' ;; \
+    esac \
+    && if [ -n "$FF_ARCH" ]; then \
+        FF_URL="$(curl -fsSL https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest | jq -r --arg arch "$FF_ARCH" '[.assets[] | select(.name | endswith($arch + ".deb")) | .browser_download_url][0] // empty')"; \
+        if [ -n "$FF_URL" ]; then \
+            curl -fsSL "$FF_URL" -o /tmp/fastfetch.deb; \
+            apt-get update; \
+            apt-get install -y --no-install-recommends /tmp/fastfetch.deb; \
+            rm -f /tmp/fastfetch.deb; \
+            rm -rf /var/lib/apt/lists/*; \
+        fi; \
+    fi
 
 RUN useradd -m -d /home/container container
 STOPSIGNAL SIGINT
