@@ -1,4 +1,5 @@
-FROM --platform=$TARGETOS/$TARGETARCH debian:bookworm
+ARG BASE_IMAGE=debian:12
+FROM --platform=$TARGETOS/$TARGETARCH ${BASE_IMAGE}
 
 LABEL author="siputzx" maintainer="custom@pterodactyl.io"
 
@@ -16,6 +17,8 @@ RUN apt-get update \
         chromium \
         curl \
         dnsutils \
+        composer \
+        default-mysql-client \
         ffmpeg \
         fd-find \
         figlet \
@@ -33,6 +36,9 @@ RUN apt-get update \
         libdbus-1-3 \
         libdrm2 \
         libgbm1 \
+        libvips-dev \
+        libpq-dev \
+        libsqlite3-dev \
         libgtk-3-0 \
         libnspr4 \
         libnss3 \
@@ -56,11 +62,17 @@ RUN apt-get update \
         nano \
         neofetch \
         net-tools \
+        php-cli \
+        php-curl \
+        php-mbstring \
+        php-xml \
+        postgresql-client \
         procps \
         python3 \
         python3-dev \
         python3-pip \
         python3-venv \
+        ruby-full \
         rsync \
         sqlite3 \
         tar \
@@ -85,15 +97,17 @@ RUN mkdir -p /etc/apt/keyrings \
     && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" > /etc/apt/sources.list.d/nodesource.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends nodejs \
-    && npm install -g pnpm@latest pm2 \
+    && npm install -g pnpm@latest yarn@latest nodemon pm2 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /etc/apt/keyrings \
-    && curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | gpg --dearmor -o /etc/apt/keyrings/cloudflared.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/cloudflared.gpg] https://pkg.cloudflare.com/cloudflared bookworm main" > /etc/apt/sources.list.d/cloudflared.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends cloudflared \
-    && rm -rf /var/lib/apt/lists/*
+RUN ARCH="$(dpkg --print-architecture)" \
+    && case "$ARCH" in \
+        amd64) CF_ARCH='amd64' ;; \
+        arm64) CF_ARCH='arm64' ;; \
+        *) echo "Unsupported architecture: $ARCH"; exit 1 ;; \
+    esac \
+    && curl -fsSL "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${CF_ARCH}" -o /usr/local/bin/cloudflared \
+    && chmod +x /usr/local/bin/cloudflared
 
 RUN ARCH="$(dpkg --print-architecture)" \
     && if [ "$ARCH" = "amd64" ]; then \
