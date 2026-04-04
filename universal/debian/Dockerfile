@@ -42,6 +42,11 @@ RUN apt-get update \
         libxkbcommon0 \
         libxrandr2 \
         libxshmfence1 \
+        libcairo2-dev \
+        libgif-dev \
+        libjpeg-dev \
+        libpango1.0-dev \
+        librsvg2-dev \
         libssl-dev \
         lsb-release \
         lsof \
@@ -64,6 +69,7 @@ RUN apt-get update \
         tree \
         tzdata \
         unzip \
+        pkg-config \
         vim \
         webp \
         whois \
@@ -77,6 +83,8 @@ RUN mkdir -p /etc/apt/keyrings \
     && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" > /etc/apt/sources.list.d/nodesource.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends nodejs \
+    && corepack enable \
+    && corepack prepare pnpm@latest --activate \
     && npm install -g pm2 \
     && rm -rf /var/lib/apt/lists/*
 
