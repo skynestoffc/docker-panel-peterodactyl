@@ -75,6 +75,7 @@ RUN apt-get update \
         whois \
         wget \
         xz-utils \
+        xvfb \
         zip \
     && rm -rf /var/lib/apt/lists/*
 
@@ -144,7 +145,8 @@ RUN curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | sh -s -- -y --p
     && ln -sf /opt/cargo/bin/rustc /usr/local/bin/rustc \
     && ln -sf /opt/cargo/bin/rustup /usr/local/bin/rustup
 
-RUN python3 -m pip install --no-cache-dir --break-system-packages -U pip setuptools wheel speedtest-cli
+RUN python3 -m pip install --no-cache-dir --break-system-packages -U pip setuptools wheel speedtest-cli camoufox[geoip] \
+    && python3 -m camoufox fetch
 
 RUN ARCH="$(dpkg --print-architecture)" \
     && case "$ARCH" in \
