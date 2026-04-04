@@ -98,16 +98,16 @@ else
     printf "${white}IP address:${reset} ${mag}%s${reset}\n" "$panel_ip"
 fi
 printf "\n"
-printf "${white}Last login:${reset} %s from ${mag}%s${reset}\n" "$(date '+%a %b %d %H:%M:%S %Y')" "$last_login_ip"
-
-if [ -n "${CLOUDFLARE_PUBLIC_URL:-}" ]; then
-    printf "${white}Cloudflare URL:${reset} ${cyan}%s${reset}\n" "${CLOUDFLARE_PUBLIC_URL}"
-fi
-
-printf "\n"
 printf "${white}Performance:${reset}\n"
 printf "\n"
 printf "${green}Load:${reset} %-8s ${green}Up time:${reset} %s\n" "$load_now" "$uptime_short"
 printf "${green}Memory usage:${reset} %-14s ${green}Usage of /:${reset} %s\n" "$mem_line" "$disk_line"
 printf "${green}CPU temp:${reset} %-4s ${green}RX today:${reset} %s\n" "$cpu_temp" "$rx_today"
 printf "\n"
+
+if [ -n "${CLOUDFLARE_PUBLIC_URL:-}" ]; then
+    printf "${white}Cloudflare URL:${reset} ${cyan}%s${reset}\n" "${CLOUDFLARE_PUBLIC_URL}"
+    printf "\n"
+fi
+
+printf "${white}Last login:${reset} %s from ${mag}%s${reset}\n" "$(date '+%a %b %d %H:%M:%S %Y')" "$last_login_ip"

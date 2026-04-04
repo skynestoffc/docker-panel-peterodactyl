@@ -83,9 +83,7 @@ RUN mkdir -p /etc/apt/keyrings \
     && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" > /etc/apt/sources.list.d/nodesource.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends nodejs \
-    && corepack enable \
-    && corepack prepare pnpm@latest --activate \
-    && npm install -g pm2 \
+    && npm install -g pnpm@latest pm2 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /etc/apt/keyrings \
@@ -169,6 +167,7 @@ RUN useradd -m -d /home/container container
 STOPSIGNAL SIGINT
 
 ENV PATH="/home/container/.local/bin:/opt/uv:/opt/bun/bin:/opt/cargo/bin:/usr/local/go/bin:${PATH}" \
+    COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
     PIP_BREAK_SYSTEM_PACKAGES=1 \
     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \

@@ -17,8 +17,9 @@ else
     python3 -m pip install --user --no-cache-dir -U yt-dlp >/tmp/yt-dlp-install.log 2>&1 || true
 fi
 
-if command -v pnpm >/dev/null 2>&1 && [ -f /home/container/package.json ] && [ -f /home/container/pnpm-lock.yaml ]; then
-    pnpm approve-builds --all >/tmp/pnpm-approve.log 2>&1 || true
+if command -v pnpm >/dev/null 2>&1 && [ -f /home/container/package.json ]; then
+    pnpm config set --location project dangerouslyAllowAllBuilds true >/tmp/pnpm-approve.log 2>&1 || true
+    pnpm approve-builds --all >>/tmp/pnpm-approve.log 2>&1 || true
 fi
 
 STARTUP=${STARTUP:-/bin/bash -li}
