@@ -30,22 +30,19 @@ jobs:
         image:
           - name: debian12
             tag: debian12_universal
-            base_image: debian:12
+            dockerfile: ./universal/debian/12/Dockerfile
           - name: debian13
             tag: debian13_universal
-            base_image: debian:13
-          - name: debian
-            tag: debian_universal
-            base_image: debian:13
+            dockerfile: ./universal/debian/13/Dockerfile
           - name: ubuntu22
             tag: ubuntu22_universal
-            base_image: ubuntu:22.04
+            dockerfile: ./universal/ubuntu/22.04/Dockerfile
           - name: ubuntu24
             tag: ubuntu24_universal
-            base_image: ubuntu:24.04
+            dockerfile: ./universal/ubuntu/24.04/Dockerfile
           - name: ubuntu25
             tag: ubuntu25_universal
-            base_image: ubuntu:25.10
+            dockerfile: ./universal/ubuntu/25.10/Dockerfile
 
     steps:
       - name: Checkout repository
@@ -53,8 +50,8 @@ jobs:
 
       - name: Check if Dockerfile exists
         run: |
-          if [ ! -f "universal/core/Dockerfile" ]; then
-            echo "Dockerfile not found: universal/core/Dockerfile"
+          if [ ! -f "${{ matrix.image.dockerfile }}" ]; then
+            echo "Dockerfile not found: ${{ matrix.image.dockerfile }}"
             exit 1
           fi
 
@@ -76,15 +73,12 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./universal/core/Dockerfile
+          file: ${{ matrix.image.dockerfile }}
           platforms: linux/amd64,linux/arm64
           push: true
           pull: true
           tags: |
             ghcr.io/siputzx/panel:${{ matrix.image.tag }}
-          build-args: |
-            BASE_IMAGE=${{ matrix.image.base_image }}
-            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           cache-from: |
             type=gha,scope=universal${{ matrix.image.tag }}
             type=registry,ref=ghcr.io/siputzx/panel:${{ matrix.image.tag }}-cache
