@@ -60,24 +60,37 @@ cpu_usage() {
 load_now="$(cpu_usage)"
 last_login_ip="${INTERNAL_IP:-127.0.0.1}"
 
+cf_enabled=false
 if [ "${CLOUDFLARE_TUNNEL:-false}" = "true" ] || [ "${CLOUDFLARE_TUNNEL:-0}" = "1" ]; then
-    if [ -z "${CLOUDFLARE_PUBLIC_URL:-}" ]; then
-        for _ in $(seq 1 20); do
-            for cf_log in /home/container/cloudflared.log /tmp/cloudflared.log; do
-                if [ -f "$cf_log" ]; then
-                    CLOUDFLARE_PUBLIC_URL="$(grep -Eo 'https://[-a-zA-Z0-9]+\.trycloudflare\.com' "$cf_log" | head -n 1 || true)"
-                    if [ -n "${CLOUDFLARE_PUBLIC_URL}" ]; then
-                        export CLOUDFLARE_PUBLIC_URL
-                        break 2
-                    fi
-                fi
-            done
-            sleep 0.5
-        done
-    fi
-else
-    unset CLOUDFLARE_PUBLIC_URL
+    cf_enabled=true
 fi
+
+resolve_cloudflare_url() {
+    if [ "$cf_enabled" != "true" ]; then
+        return
+    fi
+
+    if [ -n "${CLOUDFLARE_PUBLIC_URL:-}" ]; then
+        return
+    fi
+
+    if [ -n "${CLOUDFLARE_TOKEN:-}" ]; then
+        return
+    fi
+
+    for _ in $(seq 1 120); do
+        for cf_log in /home/container/cloudflared.log /tmp/cloudflared.log; do
+            if [ -f "$cf_log" ]; then
+                CLOUDFLARE_PUBLIC_URL="$(grep -Eo 'https://[-a-zA-Z0-9]+\.trycloudflare\.com' "$cf_log" | head -n 1 || true)"
+                if [ -n "${CLOUDFLARE_PUBLIC_URL}" ]; then
+                    export CLOUDFLARE_PUBLIC_URL
+                    return
+                fi
+            fi
+        done
+        sleep 0.5
+    done
+}
 
 cyan=$'\e[1;36m'
 green=$'\e[1;32m'
@@ -124,7 +137,8 @@ printf "${green}Memory usage:${reset} %-14s ${green}Usage of /:${reset} %s\n" "$
 printf "${green}CPU temp:${reset} %-4s ${green}RX today:${reset} %s\n" "$cpu_temp" "$rx_today"
 printf "\n"
 
-if [ -n "${CLOUDFLARE_PUBLIC_URL:-}" ]; then
+resolve_cloudflare_url
+if [ "$cf_enabled" = "true" ] && [ -n "${CLOUDFLARE_PUBLIC_URL:-}" ]; then
     printf "${white}Cloudflare URL:${reset} ${cyan}%s${reset}\n" "${CLOUDFLARE_PUBLIC_URL}"
     printf "\n"
 fi
