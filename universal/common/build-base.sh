@@ -69,6 +69,7 @@ apt-get update \
     ruby-full \
     rsync \
     sqlite3 \
+    speedtest-cli \
     tar \
     tcpdump \
     tini \
@@ -153,8 +154,6 @@ curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | sh -s -- -y --profi
   && ln -sf /opt/cargo/bin/cargo /usr/local/bin/cargo \
   && ln -sf /opt/cargo/bin/rustc /usr/local/bin/rustc \
   && ln -sf /opt/cargo/bin/rustup /usr/local/bin/rustup
-
-python3 -m pip install --no-cache-dir --break-system-packages speedtest-cli
 
 ARCH="$(dpkg --print-architecture)"
 case "$ARCH" in
