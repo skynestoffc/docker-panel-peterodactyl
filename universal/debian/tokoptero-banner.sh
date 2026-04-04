@@ -74,17 +74,25 @@ resolve_cloudflare_url() {
         return
     fi
 
-    if [ -n "${CLOUDFLARE_TOKEN:-}" ]; then
-        return
-    fi
-
     for _ in $(seq 1 120); do
         for cf_log in /home/container/cloudflared.log /tmp/cloudflared.log; do
             if [ -f "$cf_log" ]; then
-                CLOUDFLARE_PUBLIC_URL="$(grep -Eo 'https://[-a-zA-Z0-9]+\.trycloudflare\.com' "$cf_log" | head -n 1 || true)"
-                if [ -n "${CLOUDFLARE_PUBLIC_URL}" ]; then
-                    export CLOUDFLARE_PUBLIC_URL
-                    return
+                if [ -n "${CLOUDFLARE_TOKEN:-}" ]; then
+                    HOSTNAME="$(grep 'hostname' "$cf_log" | head -n1 | sed -n 's/.*\\"hostname\\":\\"\([^\\]*\)\\",.*/\1/p')"
+                    if [ -z "$HOSTNAME" ]; then
+                        HOSTNAME="$(grep 'hostname' "$cf_log" | head -n1 | sed -n 's/.*"hostname":"\([^"]*\)".*/\1/p')"
+                    fi
+                    if [ -n "$HOSTNAME" ]; then
+                        CLOUDFLARE_PUBLIC_URL="https://${HOSTNAME}"
+                        export CLOUDFLARE_PUBLIC_URL
+                        return
+                    fi
+                else
+                    CLOUDFLARE_PUBLIC_URL="$(sed -n 's|.*\(https://[a-zA-Z0-9-]*\.trycloudflare\.com\).*|\1|p' "$cf_log" | head -n1 || true)"
+                    if [ -n "${CLOUDFLARE_PUBLIC_URL}" ]; then
+                        export CLOUDFLARE_PUBLIC_URL
+                        return
+                    fi
                 fi
             fi
         done
