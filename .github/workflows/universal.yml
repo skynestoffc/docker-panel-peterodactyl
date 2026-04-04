@@ -62,6 +62,8 @@ jobs:
           pull: true
           tags: |
             ghcr.io/siputzx/panel:${{ matrix.image.tag }}
+          build-args: |
+            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           cache-from: |
             type=gha,scope=universal${{ matrix.image.tag }}
             type=registry,ref=ghcr.io/siputzx/panel:${{ matrix.image.tag }}-cache

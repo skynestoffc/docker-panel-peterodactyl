@@ -3,6 +3,7 @@ FROM --platform=$TARGETOS/$TARGETARCH debian:bookworm
 LABEL author="siputzx" maintainer="custom@pterodactyl.io"
 
 ARG NODE_MAJOR=22
+ARG GITHUB_TOKEN
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
@@ -146,7 +147,9 @@ RUN curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | sh -s -- -y --p
     && ln -sf /opt/cargo/bin/rustup /usr/local/bin/rustup
 
 RUN python3 -m pip install --no-cache-dir --break-system-packages -U pip setuptools wheel speedtest-cli camoufox[geoip] \
-    && python3 -m camoufox fetch
+    && export GITHUB_TOKEN="${GITHUB_TOKEN:-}" \
+    && python3 -m camoufox fetch \
+    && unset GITHUB_TOKEN
 
 RUN ARCH="$(dpkg --print-architecture)" \
     && case "$ARCH" in \
