@@ -5,8 +5,12 @@ on:
     branches: [ main, master ]
     paths:
       - 'universal/**'
-      - '.github/workflows/**'
+      - '.github/workflows/universal.yml'
   workflow_dispatch:
+
+concurrency:
+  group: universal-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io

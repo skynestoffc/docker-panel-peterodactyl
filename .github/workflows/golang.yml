@@ -5,8 +5,12 @@ on:
     branches: [ main, master ]
     paths:
       - 'golang/**'
-      - '.github/workflows/**'
+      - '.github/workflows/golang.yml'
   workflow_dispatch:
+
+concurrency:
+  group: golang-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io

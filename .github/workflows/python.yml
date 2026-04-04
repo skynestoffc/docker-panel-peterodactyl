@@ -5,8 +5,12 @@ on:
     branches: [ main, master ]
     paths:
       - 'python/**'
-      - '.github/workflows/**'
+      - '.github/workflows/python.yml'
   workflow_dispatch:
+
+concurrency:
+  group: python-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io

@@ -5,8 +5,12 @@ on:
     branches: [ main, master ]
     paths:
       - 'nodejs/**'
-      - '.github/workflows/**'
+      - '.github/workflows/nodejs.yml'
   workflow_dispatch:
+
+concurrency:
+  group: nodejs-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io
