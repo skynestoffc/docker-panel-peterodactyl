@@ -61,7 +61,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/siputzx/panel:node_${{ matrix.node-version }}
+            ghcr.io/skynest/panel:node_${{ matrix.node-version }}
           cache-from: type=gha,scope=nodejs${{ matrix.node-version }}
           cache-to: type=gha,mode=max,scope=nodejs${{ matrix.node-version }}
           provenance: false
