@@ -61,7 +61,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/siputzx/panel:python_${{ matrix.python-version }}
+            ghcr.io/skynest/panel:python_${{ matrix.python-version }}
           cache-from: type=gha,scope=python${{ matrix.python-version }}
           cache-to: type=gha,mode=max,scope=python${{ matrix.python-version }}
           provenance: false
